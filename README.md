@@ -46,7 +46,7 @@
 
 # Specify a custom log file location
 .\createVHDFromVelo.ps1 -TriageOutputDir "C:\triage_output" -LogPath "C:\logs\velo_export.log"
-
+```
 ---
 
 ## Logging

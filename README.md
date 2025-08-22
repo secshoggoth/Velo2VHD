@@ -47,3 +47,22 @@
 # Specify a custom log file location
 .\createVHDFromVelo.ps1 -TriageOutputDir "C:\triage_output" -LogPath "C:\logs\velo_export.log"
 
+---
+
+## Logging
+
+- The script writes detailed info, warning, and error messages to a log file.
+- The default log file is saved next to the VHD file with the naming format: <VhdFileName>_yyyMMdd_HHmmss_log.txt
+- Use the -Quiet switch to suppress all console output while still writing to the log.
+
+## Notes
+
+- The script must be run with Administrator privileges because it creates, mounts, partitions, and formats VHD files.
+- Ensure Hyper-V is installed and the PowerShell Hyper-V module is available (Import-Module Hyper-V).
+- The VHD is formatted with NTFS and the triage files are copied into a root-level C directory inside the VHD.
+- Some NTFS metadata files are renamed during copy to accommodate Velociraptor's naming conventions.
+- The script performs validation on input directories and the VHD file overwrite behavior.
+
+## Contact/Support
+
+Feel free to open issues or pull requests if you encounter problems or want to contribute improvements.

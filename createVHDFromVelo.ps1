@@ -3,7 +3,7 @@
     Creates a dynamically expanding VHD from Velociraptor triage output by copying files into a C directory inside the VHD. The output format mimics the Kape VHD output.
 	
 .VERSION
-    1.0.0 - Initial version.
+    1.0.1 - Initial version.
 
 .PARAMETER TriageOutputDir
     Directory containing Velociraptor triage output structure.
@@ -53,7 +53,7 @@ param (
 )
 
 # Version variable
-$ScriptVersion = '1.0.0'
+$ScriptVersion = '1.0.1'
 
 function Get-ScriptVersion {
     return $ScriptVersion
@@ -138,12 +138,22 @@ function Copy-WithErrors {
     }
 
     foreach ($item in $items) {
-        $dest = Join-Path $DestinationPath $item.Name
+        # Perform replacements on the item's name:
+        $newName = $item.Name
+        $newName = $newName -replace '(?i)%3A', ':'     # Replace %3A with :
+        $newName = $newName -replace '(?i)%25', '%'     # Replace %25 with %
+        $newName = $newName -replace '(?i)%2E', '.'     # Replace %2E with .
+
+        # Compose destination path with the replaced name
+        $dest = Join-Path $DestinationPath $newName
+
         try {
             if ($item.PSIsContainer) {
+                # Recursively copy with renamed folder name
                 Copy-WithErrors -SourcePath $item.FullName -DestinationPath $dest
             }
             else {
+                # Copy file with renamed name
                 Copy-Item -LiteralPath $item.FullName -Destination $dest -Force -ErrorAction Stop
                 Write-Info "Copied file: $($item.FullName) to $dest"
             }
@@ -264,6 +274,7 @@ try {
     }
 
     Write-Info "Copying NTFS metadata files from ntfs\%5C%5C.%5CC%3A to VHD C directory..."
+	Write-Host "Starting"
     Get-ChildItem -LiteralPath $ntfsDir -Recurse | ForEach-Object {
         $relativePath = $_.FullName.Substring($ntfsDir.Length).TrimStart('\','/')
         $destRelativePath = $relativePath
@@ -277,7 +288,8 @@ try {
         }
         elseif ($relativePath -like '$Extend\$UsnJrnl%3A$Max' -or $relativePath -like '$Extend\$UsnJrnl:$Max') {
             $destRelativePath = $relativePath -replace '\\\$UsnJrnl(%3A|:)', '\'
-        }
+        }		
+
 
         $destFullPath = Join-Path $targetC $destRelativePath
         $destDir = Split-Path $destFullPath -Parent
